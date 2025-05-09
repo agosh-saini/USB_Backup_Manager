@@ -1,0 +1,9 @@
+{
+    "master_key_salt": "bDyM7fNc4lV0LMJbNu6How==",
+    "argon2_time_cost": 2,
+    "argon2_memory_cost": 102400,
+    "argon2_parallelism": 8,
+    "argon2_length": 32,
+    "master_key_file_pattern": "master_key_{}.enc",
+    "encryption_key_dir": "keyvault"
+}
