@@ -1,16 +1,20 @@
-name: Cross-platform Nuitka Build
+name: USB Backup Key Manager Build
 
 on:
   push:
     tags:
       - 'v*.*.*'
-
+  workflow_dispatch:
+    
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+
+    env:
+      NUITKA_CCACHE_BINARY: ""  
 
     steps:
     - name: Checkout repository
@@ -20,27 +24,23 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-        cache: 'pip'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
-        python -m pip install nuitka==1.8.6
-        python -m nuitka --version
+        pip install -r requirements.txt
+        pip install nuitka
 
-    - name: Build with Nuitka
+    - name: Build with Nuitka (standalone)
       run: |
         mkdir build_output
-        python -m nuitka --standalone main.py --output-dir=build_output --name=backup_key_manager
+        nuitka --standalone main.py --output-dir=build_output --output-filename=backup_key_manager
 
-    - name: Upload binary artifact
+    - name: Upload output folder
       uses: actions/upload-artifact@v4
       with:
         name: backup_key_manager-${{ matrix.os }}
-        path: |
-          build_output/backup_key_manager-${{ matrix.os }}/backup_key_manager
-        if-no-files-found: error
+        path: build_output/
 
   release:
     needs: build
