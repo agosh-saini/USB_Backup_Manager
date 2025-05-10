@@ -2,7 +2,8 @@ name: Build USB-Compatible App with Nuitka
 
 on:
   push:
-    branches: [main]
+    tags:
+      - 'v*'  # Trigger on version tags
   workflow_dispatch:
 
 jobs:
@@ -13,8 +14,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     env:
-      NUITKA_CCACHE_BINARY: ""  # 🚫 Prevent Nuitka from trying to use ccache
-
+      NUITKA_CCACHE_BINARY: ""  
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -33,10 +33,25 @@ jobs:
     - name: Build with Nuitka (standalone)
       run: |
         mkdir build_output
-        nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool
+        if [ "${{ matrix.os }}" == "windows-latest" ]; then
+          nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool.exe
+        else
+          nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool
+        fi
 
-    - name: Upload output folder
-      uses: actions/upload-artifact@v4
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
       with:
-        name: backup_key_manager-${{ matrix.os }}
-        path: build_output/
+        files: |
+          build_output/usb_tool*
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          USB Backup Manager ${{ github.ref_name }}
+          
+          Download the appropriate binary for your system:
+          - Windows: usb_tool.exe
+          - macOS/Linux: usb_tool
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

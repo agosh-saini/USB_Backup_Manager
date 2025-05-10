@@ -16,23 +16,41 @@ A secure and user-friendly command-line tool for managing backup keys and accoun
 - Python 3.8 or higher
 - pip (Python package installer)
 
-## PyInstaller Instructions
+## Standalone application
 
-To create a portable executable that can run from a USB drive:
+The application is available as pre-built binaries for Windows, macOS, and Linux. These are distributed through GitHub Releases.
+
+### Downloading the Application
+
+1. Go to the [Releases page](https://github.com/yourusername/USB_Backup_Manager/releases)
+2. Download the appropriate binary for your operating system:
+   - Windows: `usb_tool.exe`
+   - macOS/Linux: `usb_tool`
+
+The binaries are automatically built and published when a new version is released. Each release includes:
+- Release notes
+- Version information
+- Binaries for all supported platforms
+
+### Building from Source
+
+If you prefer to build the application yourself:
 
 1. Install PyInstaller:
 ```bash
 pip install pyinstaller
 ```
 
-2. Create the executable:
+2. Build the executable:
 ```bash
+# On Windows
 pyinstaller --onefile --name USB_Backup_Manager main.py
+
+# On Unix or MacOS
+pyinstaller --onefile --name usb_backup_manager main.py
 ```
 
-The executable will be created in the `dist` directory. You can copy this executable to your USB drive along with the necessary `config`, `db`, and `keyvault` directories.
-
-For more information about PyInstaller options and advanced usage, visit the [PyInstaller documentation](https://pyinstaller.org/en/stable/).
+The executable will be created in the `dist` directory.
 
 ## Configuration
 
