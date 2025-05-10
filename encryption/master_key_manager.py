@@ -20,7 +20,7 @@ class MasterKeyManager:
             self.config: dict = load(f)
         
         self.salt: bytes = b64decode(self.config["master_key_salt"])
-        self.master_key_file_pattern = self.config["master_key_file_pattern"].format("*")
+        self.master_key_file_pattern = self.config["master_key_file_pattern"]
 
     def _derive_key(self, password: Optional[bytes] = None) -> bytes:
         if password is None:
@@ -58,7 +58,7 @@ class MasterKeyManager:
         key = self._derive_key()
         aesgcm: AESGCM = AESGCM(key)
 
-        for file in self.encryption_key_dir.glob(self.master_key_file_pattern):
+        for file in self.encryption_key_dir.glob(self.master_key_file_pattern.format("*")):
             try:
                 with open(file, "rb") as f:
                     encrypted_key: bytes = b64decode(f.read())
@@ -74,6 +74,33 @@ class MasterKeyManager:
         print("No master key found")
         return None
     
+    def update_master_key(self, new_password: List[bytes]) -> None:
+        if not new_password:
+            print("No new password provided")
+            return
+        
+        if len(new_password) != 3:
+            print("Invalid number of passwords provided")
+            return
+        
+        current_master_key = self.load_master_key()
+        if current_master_key is None:
+            print("Failed to load current master key")
+            return
+        
+        for i, password in enumerate(new_password):
+            key: bytes = self._derive_key(password)
+            aesgcm: AESGCM = AESGCM(key)
+            nonce: bytes = urandom(12)
+            ciphertext: bytes = aesgcm.encrypt(nonce, current_master_key, associated_data=None)
+            encrypted_key: bytes = b64encode(nonce + ciphertext)
+            
+            key_file_path: Path = self.encryption_key_dir / self.master_key_file_pattern.format(i)
+            with open(key_file_path, "wb") as f:
+                f.write(encrypted_key)
+
+        print("Master key updated successfully!")
+        
 
 if __name__ == "__main__":
     from getpass import getpass
@@ -105,3 +132,4 @@ if __name__ == "__main__":
             print("Master key loaded successfully!")
         else:
             print("Failed to load master key")
+

@@ -45,7 +45,8 @@ class DbInit:
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 platform TEXT NOT NULL,
                                 account_name TEXT NOT NULL,
-                                key_count INTEGER NOT NULL DEFAULT 0)
+                                key_count INTEGER NOT NULL DEFAULT 0,
+                                UNIQUE(platform, account_name))
                            """)
             conn.commit()
             print(f"Open index created: {self.open_index_path}")
@@ -96,13 +97,17 @@ class DBUtils:
     def __init__(self, db_path: Union[str, Path]) -> None:
         self.db_path = db_path
 
-    def add_account(self, account_id: str, platform: Optional[str], account_name: Optional[str]) -> None:
-        with connect(self.db_path) as conn:
-            cursor: Cursor = conn.cursor()
-            cursor.execute("INSERT INTO accounts (id, platform, account_name) VALUES (?, ?, ?)", (account_id, platform, account_name))
-            conn.commit()
-
-        return None
+    def add_account(self, platform: Optional[str], account_name: Optional[str]) -> bool:
+        try:
+            with connect(self.db_path) as conn:
+                cursor: Cursor = conn.cursor()
+                cursor.execute("INSERT INTO accounts (platform, account_name) VALUES (?, ?)", (platform, account_name))
+                conn.commit()
+            return True
+        except Exception as e:
+            if "UNIQUE constraint failed" in str(e):
+                return False
+            raise e
 
     def add_backup_key(self, account_id: str, encrypted_key: str) -> None:
         with connect(self.db_path) as conn:
