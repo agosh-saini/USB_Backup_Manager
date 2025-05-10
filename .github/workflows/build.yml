@@ -12,9 +12,12 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
+    env:
+      NUITKA_CCACHE_BINARY: ""  # 🚫 Prevent Nuitka from trying to use ccache
+
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -33,7 +36,7 @@ jobs:
         nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool
 
     - name: Upload output folder
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
-        name: backup_key_manager-${{ matrix.os }}
+        name: usb_tool-${{ matrix.os }}
         path: build_output/
