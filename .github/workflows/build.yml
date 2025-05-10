@@ -51,13 +51,19 @@ jobs:
         with:
           path: build_output
 
+      - name: Zip build outputs
+        run: |
+          cd build_output/backup_key_manager-ubuntu-latest && zip -r ../../backup_key_manager-ubuntu-latest.zip . && cd ../..
+          cd build_output/backup_key_manager-windows-latest && zip -r ../../backup_key_manager-windows-latest.zip . && cd ../..
+          cd build_output/backup_key_manager-macos-latest && zip -r ../../backup_key_manager-macos-latest.zip . && cd ../..
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build_output/backup_key_manager-ubuntu-latest/backup_key_manager/*
-            build_output/backup_key_manager-windows-latest/backup_key_manager/*
-            build_output/backup_key_manager-macos-latest/backup_key_manager/*
+            build_output/backup_key_manager-ubuntu-latest.zip
+            build_output/backup_key_manager-windows-latest.zip
+            build_output/backup_key_manager-macos-latest.zip
           draft: false
           prerelease: false
           generate_release_notes: false
