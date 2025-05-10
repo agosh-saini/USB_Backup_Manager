@@ -1,6 +1,7 @@
 from sqlite3 import connect, Cursor
 from pathlib import Path
 from typing import Optional, Union
+from click import secho 
 
 
 class DbInit:
@@ -17,17 +18,17 @@ class DbInit:
 
     def initalize_all(self) -> None:
         if self.open_index_path.exists():
-            print(f"Open index already exists: {self.open_index_path}")
+            secho(f"Open index already exists: {self.open_index_path}", fg="yellow")
         else:
             self._create_open_index()
         
         if self.encrypted_index_path.exists():
-            print(f"Encrypted index already exists: {self.encrypted_index_path}")
+            secho(f"Encrypted index already exists: {self.encrypted_index_path}", fg="yellow")
         else:
             self._create_encrypted_index()
         
         if self.used_index_path.exists():
-            print(f"Used index already exists: {self.used_index_path}")
+            secho(f"Used index already exists: {self.used_index_path}", fg="yellow")
         else:
             self._create_used_index()
 
@@ -35,7 +36,7 @@ class DbInit:
 
     def _create_open_index(self) -> None:
         if self.open_index_path.exists():
-            print(f"Open index already exists: {self.open_index_path}")
+            secho(f"Open index already exists: {self.open_index_path}", fg="yellow")
             return None
         
         with connect(self.open_index_path) as conn:
@@ -49,13 +50,13 @@ class DbInit:
                     UNIQUE(platform, account_name))
             """)
             conn.commit()
-            print(f"Open index created: {self.open_index_path}")
+            secho(f"Open index created: {self.open_index_path}", fg="green")
 
         return None
 
     def _create_encrypted_index(self) -> None:
         if self.encrypted_index_path.exists():
-            print(f"Encrypted index already exists: {self.encrypted_index_path}")
+            secho(f"Encrypted index already exists: {self.encrypted_index_path}", fg="yellow")
             return None   
         
         with connect(self.encrypted_index_path) as conn:
@@ -68,13 +69,13 @@ class DbInit:
                     FOREIGN KEY (account_id) REFERENCES accounts(id))
             """)
             conn.commit()
-            print(f"Encrypted index created: {self.encrypted_index_path}")
+            secho(f"Encrypted index created: {self.encrypted_index_path}", fg="green")
 
         return None
 
     def _create_used_index(self) -> None:
         if self.used_index_path.exists():
-            print(f"Used index already exists: {self.used_index_path}")
+            secho(f"Used index already exists: {self.used_index_path}", fg="yellow")
             return None
         
         with connect(self.used_index_path) as conn:
@@ -88,7 +89,7 @@ class DbInit:
                     used_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
             """)
             conn.commit()
-            print(f"Used index created: {self.used_index_path}")
+            secho(f"Used index created: {self.used_index_path}", fg="green")
 
         return None
     

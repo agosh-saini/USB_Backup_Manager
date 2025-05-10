@@ -3,12 +3,14 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from typing import List, Optional
 from os import urandom
 from encryption.master_key_manager import MasterKeyManager
+from click import secho
 
 class CryptoHandler:
     def __init__(self, password: bytes, config_path: str = "config/settings.json") -> None:
         self.key_manager = MasterKeyManager(password, config_path=config_path)
         self.master_key = self.key_manager.load_master_key()
         if not self.master_key:
+            secho("Failed to load master key", fg="red")
             raise ValueError("Failed to load master key")
 
     def encrypt(self, data: bytes) -> str:
@@ -26,5 +28,5 @@ class CryptoHandler:
             aesgcm: AESGCM = AESGCM(self.master_key)
             return aesgcm.decrypt(nonce, ciphertext, associated_data=None)
         except Exception as e:
-            print(f"Error decrypting data: {e}")
+            secho(f"Error decrypting data: {e}", fg="red")
             return None

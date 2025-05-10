@@ -4,44 +4,47 @@ from utils.input_handler import InputHandler
 from utils.db_utils import DbInit
 from utils.db_utils import DBUtils
 
-import sys
-import os
+from sys import exit as sys_exit
+
+from click import secho
 
 from pathlib import Path
 from getpass import getpass
 
 def main():
-    print("Welcome to the Backup Key Manager")
-    print("Please enter your master password to continue")
+    secho("Backup Key Manager", fg="green", bold=True, underline=True)  
+    secho("Welcome to the Backup Key Manager", fg="green")
+    secho("Please enter your master password to continue", fg="yellow")
+    secho("First time users should enter a new password", fg="yellow")
     master_password = getpass().encode()
-    print("Please enter your master password again to confirm")
+    secho("Please enter your master password again to confirm", fg="yellow")
     confirm_password = getpass().encode()
 
     if master_password != confirm_password:
-        print("Passwords do not match")
-        sys.exit(1)
+        secho("Passwords do not match", fg="red")
+        exit(1)
     
     # Initalize Master Key Manager
     key_manager = MasterKeyManager(master_password)
 
     # Confirm Password
     if not any(Path("keyvault").glob("master_key_*.enc")):
-        print("No master key found. Generating new master key...")
+        secho("No master key found. Generating new master key...", fg="yellow")
         passwords = []
         for i in range(3):
             pwd = getpass(f"Enter password {i+1}: ").encode()
             passwords.append(pwd)
         master_key = key_manager.generate_master_key(passwords)
-        print("Master key generated successfully!")
+        secho("Master key generated successfully!", fg="green")
     
     else:
-        print("Loading existing master key...")
+        secho("Loading existing master key...", fg="yellow")
         master_key = key_manager.load_master_key()
         if master_key:
-            print("Master key loaded successfully!")
+            secho("Master key loaded successfully!", fg="green")
         else:
-            print("Failed to load master key")
-            sys.exit(1)
+            secho("Failed to load master key", fg="red")
+            sys_exit(1)
 
     # Initialize Crypto Handler
     crypto_handler = CryptoHandler(master_password)
@@ -60,7 +63,7 @@ def main():
     input_handler = InputHandler(key_manager, crypto_handler, open_db, encrypted_db, used_db)
 
     while True:
-        print("Print -h for list of commands")
+        secho("Print -h for list of commands", fg="yellow")
         command = input("Enter a command: ")
 
         if command in ["-h", "add_account", "add_backup_key", "view_backup_key", 
@@ -99,10 +102,10 @@ def main():
                 input_handler.update_password()
 
             if command == "exit":
-                sys.exit(0)
+                sys_exit(0)
         
         else:
-            print("Invalid command")
+            secho("Invalid command", fg="red")
 
    
 
