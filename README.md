@@ -137,10 +137,21 @@ Remember: While having three passwords helps prevent complete lockout, it's stil
 ```
 USB_Backup_Manager/
 ├── config/         # Configuration files
+│   └── settings.py # Application settings
 ├── db/            # Database files
+│   ├── encrypted_index.db  # Encrypted backup keys
+│   ├── open_index.db      # Account information
+│   └── used_index.db      # Archive of used keys
 ├── encryption/    # Encryption-related modules
+│   ├── __init__.py
+│   ├── crypto_handler.py  # Encryption/decryption logic
+│   └── master_key_manager.py # Master key management
 ├── keyvault/      # Secure key storage
+│   └── master_key_*.enc   # Encrypted master keys
 ├── utils/         # Utility functions
+│   ├── __init__.py
+│   ├── db_utils.py       # Database operations
+│   └── input_handler.py  # User input processing
 ├── venv/          # Virtual environment
 ├── main.py        # Main application entry point
 ├── requirements.txt # Project dependencies
@@ -165,7 +176,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Security
 
-If you discover any security-related issues, please email [your-email@example.com] instead of using the issue tracker.
+If you discover any security-related issues, please email contact@agoshsaini.com
 
 ## Disclaimer
 
