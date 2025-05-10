@@ -13,9 +13,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
-    env:
-      NUITKA_CCACHE_BINARY: ""  
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -29,18 +26,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install nuitka
+        pip install pyinstaller
 
-    - name: Build with Nuitka (standalone)
+    - name: Build with PyInstaller
       run: |
-        mkdir build_output
-        nuitka --standalone main.py --assume-yes-for-downloads --output-dir=build_output --output-filename=backup_key_manager
+        pyinstaller --onefolder --distpath build_output --name backup_key_manager main.py
 
     - name: Upload output folder
       uses: actions/upload-artifact@v4
       with:
         name: backup_key_manager-${{ matrix.os }}
-        path: build_output/backup_key_manager.dist/
+        path: build_output/backup_key_manager/
 
   release:
     needs: build
@@ -59,9 +55,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build_output/backup_key_manager-ubuntu-latest/backup_key_manager.dist/backup_key_manager
-            build_output/backup_key_manager-windows-latest/backup_key_manager.dist/backup_key_manager.exe
-            build_output/backup_key_manager-macos-latest/backup_key_manager.dist/backup_key_manager
+            build_output/backup_key_manager-ubuntu-latest/backup_key_manager/*
+            build_output/backup_key_manager-windows-latest/backup_key_manager/*
+            build_output/backup_key_manager-macos-latest/backup_key_manager/*
           draft: false
           prerelease: false
           generate_release_notes: false
