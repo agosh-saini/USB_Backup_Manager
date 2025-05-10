@@ -1,10 +1,9 @@
-name: Build USB-Compatible App with Nuitka
+name: Cross-platform Nuitka Build
 
 on:
   push:
     tags:
-      - 'v*'  # Trigger on version tags
-  workflow_dispatch:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -13,8 +12,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
-    env:
-      NUITKA_CCACHE_BINARY: ""  
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -22,37 +19,49 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.10.1'
+        cache: 'pip'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install nuitka
+        pip install nuitka==1.8.6
 
-    - name: Build with Nuitka (standalone)
-      shell: bash
+    - name: Build with Nuitka
       run: |
         mkdir build_output
-        if [ "${{ matrix.os }}" == "windows-latest" ]; then
-          nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool.exe
-        else
-          nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool
-        fi
+        nuitka --standalone main.py --output-dir=build_output --name=backup_key_manager
 
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v1
+    - name: Upload binary artifact
+      uses: actions/upload-artifact@v4
       with:
-        files: |
-          build_output/usb_tool*
-        tag_name: ${{ github.ref_name }}
-        name: Release ${{ github.ref_name }}
-        body: |
-          USB Backup Manager ${{ github.ref_name }}
-          
-          Download the appropriate binary for your system:
-          - Windows: usb_tool.exe
-          - macOS/Linux: usb_tool
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: backup_key_manager-${{ matrix.os }}
+        path: |
+          build_output/backup_key_manager-${{ matrix.os }}/backup_key_manager
+        if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build_output
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build_output/backup_key_manager-ubuntu-latest/backup_key_manager
+            build_output/backup_key_manager-windows-latest/backup_key_manager.exe
+            build_output/backup_key_manager-macos-latest/backup_key_manager
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
