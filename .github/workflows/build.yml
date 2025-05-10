@@ -1,8 +1,9 @@
-name: Cross-platform Nuitka Build
+name: Build USB-Compatible App with Nuitka
 
 on:
   push:
-    branches: [ main ]   
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,13 +27,13 @@ jobs:
         pip install -r requirements.txt
         pip install nuitka
 
-    - name: Build binary
+    - name: Build with Nuitka (standalone)
       run: |
-        nuitka --standalone --onefile main.py --output-filename=backup_key_manager
+        mkdir build_output
+        nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool
 
-    - name: Upload binary artifact
+    - name: Upload output folder
       uses: actions/upload-artifact@v3
       with:
-        name: backup_key_manager-${{ matrix.os }}
-        path: |
-          backup_key_manager*
+        name: usb_tool-${{ matrix.os }}
+        path: build_output/
