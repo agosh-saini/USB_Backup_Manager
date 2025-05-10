@@ -101,7 +101,11 @@ class DBUtils:
         try:
             with connect(self.db_path) as conn:
                 cursor: Cursor = conn.cursor()
-                cursor.execute("INSERT INTO accounts (platform, account_name) VALUES (?, ?)", (platform, account_name))
+                cursor.execute("""
+                    INSERT INTO accounts 
+                    (platform, account_name) 
+                    VALUES (?, ?)
+                """, (platform, account_name))
                 conn.commit()
             return True
         except Exception as e:
@@ -112,13 +116,21 @@ class DBUtils:
     def add_backup_key(self, account_id: str, encrypted_key: str) -> None:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
-            cursor.execute("INSERT INTO backup_keys (account_id, encrypted_key) VALUES (?, ?)", (account_id, encrypted_key))
+            cursor.execute("""
+                INSERT INTO backup_keys 
+                (account_id, encrypted_key) 
+                VALUES (?, ?)
+            """, (account_id, encrypted_key))
             conn.commit()
 
     def get_account_id(self, platform: str, account_name: str) -> Optional[str]:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
-            cursor.execute("SELECT id FROM accounts WHERE platform = ? AND account_name = ?", (platform, account_name))
+            cursor.execute("""
+                SELECT id 
+                FROM accounts 
+                WHERE platform = ? AND account_name = ?
+            """, (platform, account_name))
             result = cursor.fetchone()
             return result[0] if result else None
 
