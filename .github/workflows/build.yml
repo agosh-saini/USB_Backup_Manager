@@ -34,7 +34,7 @@ jobs:
     - name: Build with Nuitka (standalone)
       run: |
         mkdir build_output
-        nuitka --standalone main.py --output-dir=build_output --output-filename=backup_key_manager
+        nuitka --standalone main.py --assume-yes-for-downloads --output-dir=build_output --output-filename=backup_key_manager
 
     - name: Upload output folder
       uses: actions/upload-artifact@v4
