@@ -14,7 +14,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -33,7 +33,7 @@ jobs:
         nuitka --standalone main.py --output-dir=build_output --output-filename=usb_tool
 
     - name: Upload output folder
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: usb_tool-${{ matrix.os }}
+        name: backup_key_manager-${{ matrix.os }}
         path: build_output/
