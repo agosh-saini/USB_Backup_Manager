@@ -5,7 +5,6 @@ from encryption.master_key_manager import MasterKeyManager
 from encryption.crypto_handler import CryptoHandler
 
 from utils.db_utils import DBUtils
-from utils.db_utils import DbInit
 
 from pathlib import Path
 
@@ -79,6 +78,7 @@ class InputHandler:
             print("Account not found")
             return
 
+        # Get the backup key with the lowest ID
         key = self.encrypted_db.get_backup_key(account_id)
         if key is None:
             print("No backup key found")
@@ -89,6 +89,7 @@ class InputHandler:
             print("Failed to decrypt key")
             return
 
+        # Delete the backup key that was viewed
         self.encrypted_db.delete_backup_key(account_id)
         self.open_db.decrement_key_count(account_id)
         self.used_db.archive_used_key(platform, account, decrypted_key.decode())
