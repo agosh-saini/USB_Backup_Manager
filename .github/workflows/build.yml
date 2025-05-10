@@ -46,6 +46,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
 
     steps:
       - name: Download all artifacts
@@ -57,9 +59,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build_output/backup_key_manager-ubuntu-latest/backup_key_manager
-            build_output/backup_key_manager-windows-latest/backup_key_manager.exe
-            build_output/backup_key_manager-macos-latest/backup_key_manager
+            build_output/backup_key_manager-ubuntu-latest/build_output/backup_key_manager
+            build_output/backup_key_manager-windows-latest/build_output/backup_key_manager.exe
+            build_output/backup_key_manager-macos-latest/build_output/backup_key_manager
           draft: false
           prerelease: false
           generate_release_notes: false
