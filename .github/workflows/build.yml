@@ -40,7 +40,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: backup_key_manager-${{ matrix.os }}
-        path: build_output/
+        path: build_output/backup_key_manager.dist/
 
   release:
     needs: build
@@ -59,9 +59,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build_output/backup_key_manager-ubuntu-latest/build_output/backup_key_manager
-            build_output/backup_key_manager-windows-latest/build_output/backup_key_manager.exe
-            build_output/backup_key_manager-macos-latest/build_output/backup_key_manager
+            build_output/backup_key_manager-ubuntu-latest/backup_key_manager.dist/backup_key_manager
+            build_output/backup_key_manager-windows-latest/backup_key_manager.dist/backup_key_manager.exe
+            build_output/backup_key_manager-macos-latest/backup_key_manager.dist/backup_key_manager
           draft: false
           prerelease: false
           generate_release_notes: false
