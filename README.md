@@ -18,19 +18,19 @@ A secure and user-friendly command-line tool for managing backup keys and accoun
 
 ## Standalone application
 
-The application is available as pre-built binaries for Windows, macOS, and Linux. These are distributed through GitHub Releases.
+The application is available as pre-built binaries for Windows, macOS, and Linux. These are distributed through GitHub Releases. For postable USB usecase for, download all three and use the OS specific version. You may need to copy over the last used db files for now until a better solution is created.
 
 ### Downloading the Application
 
-1. Go to the [Releases page](https://github.com/yourusername/USB_Backup_Manager/releases)
-2. Download the appropriate binary for your operating system:
-   - Windows: `usb_tool.exe`
-   - macOS/Linux: `usb_tool`
-
-The binaries are automatically built and published when a new version is released. Each release includes:
-- Release notes
-- Version information
-- Binaries for all supported platforms
+1. Visit the [Releases](https://github.com/agoshsaini/USB-Backup-Manager/releases) page
+2. Download the appropriate zip file for your operating system:
+   - Windows: `backup_key_manager-windows-latest.zip`
+   - macOS: `backup_key_manager-macos-latest.zip` 
+   - Linux: `backup_key_manager-ubuntu-latest.zip`
+3. Extract the zip file to your desired location
+4. Run the executable:
+   - Windows: Double click `backup_key_manager.exe`
+   - macOS/Linux: Open terminal in extracted folder and run `./backup_key_manager`
 
 ### Building from Source
 
@@ -51,6 +51,14 @@ pyinstaller --onefile --name usb_backup_manager main.py
 ```
 
 The executable will be created in the `dist` directory.
+
+
+Before running the application, you need to set up the required directory structure:
+
+- `config/` - For configuration files
+- `db/` - For the SQLite database
+- `keyvault/` - For encrypted backup key storage
+
 
 ## Configuration
 
@@ -76,6 +84,7 @@ Example configuration:
 
 Note: 
 - Always make a backup of your settings.json before modifying it. Without these values, recovery of data is impossible
+- Always backup keys used in keyvault. Without the files, recovery of data is impossible
 - The `master_key_salt` should be unique to you
 - Increasing `argon2_time_cost` and `argon2_memory_cost` will make the encryption more secure but slower
 - These settings affect the security of your encrypted data, so modify them with caution
