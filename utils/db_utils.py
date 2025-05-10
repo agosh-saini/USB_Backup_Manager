@@ -65,7 +65,7 @@ class DbInit:
                 CREATE TABLE backup_keys (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     account_id INTEGER NOT NULL,
-                    encrypted_key TEXT NOT NULL,
+                    encrypted_value TEXT NOT NULL,
                     FOREIGN KEY (account_id) REFERENCES accounts(id))
             """)
             conn.commit()
@@ -114,14 +114,14 @@ class DBUtils:
                 return False
             raise e
 
-    def add_backup_key(self, account_id: str, encrypted_key: str) -> None:
+    def add_backup_key(self, account_id: str, encrypted_value: str) -> None:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO backup_keys 
-                (account_id, encrypted_key) 
+                (account_id, encrypted_value) 
                 VALUES (?, ?)
-            """, (account_id, encrypted_key))
+            """, (account_id, encrypted_value))
             conn.commit()
 
     def get_account_id(self, platform: str, account_name: str) -> Optional[str]:
@@ -139,7 +139,7 @@ class DBUtils:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
-                SELECT encrypted_key, id 
+                SELECT encrypted_value, id 
                 FROM backup_keys 
                 WHERE account_id = ? 
                 ORDER BY id ASC 
@@ -196,7 +196,7 @@ class DBUtils:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
-                SELECT account_id, encrypted_key 
+                SELECT account_id, encrypted_value
                 FROM backup_keys
             """)
             return cursor.fetchall()

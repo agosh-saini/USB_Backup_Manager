@@ -111,17 +111,12 @@ def main():
         else:
             secho("Invalid command", fg="red")
 
-   
-
 
 if __name__ == "__main__":
     main()
         
     
-    
-    
-    
-    
+
     
     
     

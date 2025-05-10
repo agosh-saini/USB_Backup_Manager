@@ -174,7 +174,7 @@ class InputHandler:
             account_id = backup_key[0]
             if account_id in accounts:
                 platform, account = accounts[account_id]
-                secho(f"Platform: {platform}, Account: {account}, ID: {account_id}", fg="green")
+                secho(f"Platform: {platform}, Account: {account}, ID: {account_id}, Data: {backup_key[1]}", fg="green")
             else:
                 secho(f"Unknown account ID: {account_id}", fg="red")
 

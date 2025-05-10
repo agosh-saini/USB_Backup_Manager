@@ -1,0 +1,38 @@
+name: Cross-platform Nuitka Build
+
+on:
+  push:
+    branches: [ main ]   
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install nuitka
+
+    - name: Build binary
+      run: |
+        nuitka --standalone --onefile main.py --output-filename=backup_key_manager
+
+    - name: Upload binary artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: backup_key_manager-${{ matrix.os }}
+        path: |
+          backup_key_manager*
