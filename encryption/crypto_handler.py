@@ -10,7 +10,7 @@ class CryptoHandler:
         self.key_manager = MasterKeyManager(password, config_path=config_path)
         self.master_key = self.key_manager.load_master_key()
         if not self.master_key:
-            secho("Failed to load master key", fg="red")
+            secho("\nFailed to load master key \n", fg="red")
             raise ValueError("Failed to load master key")
 
     def encrypt(self, data: bytes) -> str:
@@ -28,5 +28,5 @@ class CryptoHandler:
             aesgcm: AESGCM = AESGCM(self.master_key)
             return aesgcm.decrypt(nonce, ciphertext, associated_data=None)
         except Exception as e:
-            secho(f"Error decrypting data: {e}", fg="red")
+            secho(f"\nError decrypting data: {e} \n", fg="red")
             return None

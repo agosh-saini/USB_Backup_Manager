@@ -1,6 +1,6 @@
 from sqlite3 import connect, Cursor
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, List
 from click import secho 
 
 
@@ -135,7 +135,7 @@ class DBUtils:
             result = cursor.fetchone()
             return result[0] if result else None
 
-    def get_backup_key(self, account_id: str) -> Optional[str]:
+    def get_backup_key(self, account_id: str) -> Optional[tuple[str, str]]:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
@@ -146,19 +146,19 @@ class DBUtils:
                 LIMIT 1
             """, (account_id,))
             result = cursor.fetchone()
-            return result[0] if result else None
+            return result if result else None
         
-    def get_used_key(self, platform: str, account_name: str) -> Optional[str]:
+    def get_used_key(self, platform: str, account_name: str) -> Optional[List[str]]:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
                 SELECT used_key 
                 FROM used_keys 
                 WHERE platform = ? AND account_name = ? 
-                ORDER BY id ASC LIMIT 1
+                ORDER BY id ASC
             """, (platform, account_name))
-            result = cursor.fetchone()
-            return result[0] if result else None
+            result = cursor.fetchall()
+            return [row[0] for row in result] if result else None
         
     def archive_used_key(self, platform: str, account_name: str, used_key: str) -> None:
         with connect(self.db_path) as conn:
@@ -212,7 +212,7 @@ class DBUtils:
 
         return None
 
-    def delete_backup_key(self, account_id: str, backup_key_id: str) -> None:
+    def delete_backup_key(self, account_id: str, backup_key_id: str) -> Optional[bool]:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
@@ -221,9 +221,9 @@ class DBUtils:
             """, (account_id, backup_key_id))
             conn.commit()
 
-        return None
+        return True
     
-    def delete_used_key(self, platform: str, account_name: str) -> None:
+    def delete_used_key(self, platform: str, account_name: str) -> Optional[bool]:
         with connect(self.db_path) as conn:
             cursor: Cursor = conn.cursor()
             cursor.execute("""
@@ -232,7 +232,7 @@ class DBUtils:
             """, (platform, account_name))
             conn.commit()
 
-        return None
+        return True
     
     def get_key_count(self, account_id: str) -> int:
         with connect(self.db_path) as conn:

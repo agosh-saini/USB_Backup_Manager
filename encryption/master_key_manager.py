@@ -14,7 +14,7 @@ class MasterKeyManager:
 
         self.encryption_key_dir: Path = encryption_key_dir
         if not self.encryption_key_dir.exists():
-            secho(f"Encryption key directory does not exist: {self.encryption_key_dir}", fg="red")
+            secho(f"\nEncryption key directory does not exist: {self.encryption_key_dir} \n", fg="red")
             self.encryption_key_dir.mkdir(exist_ok=True)
 
         with open(config_path, "r") as f:
@@ -64,6 +64,9 @@ class MasterKeyManager:
         key = self._derive_key()
         aesgcm: AESGCM = AESGCM(key)
 
+        error: List[str] = []
+
+        
         for file in self.encryption_key_dir.glob(self.master_key_file_pattern.format("*")):
             try:
                 with open(file, "rb") as f:
@@ -71,27 +74,26 @@ class MasterKeyManager:
 
                 nonce: bytes = encrypted_key[:12]
                 ciphertext: bytes = encrypted_key[12:]
-
                 return aesgcm.decrypt(nonce, ciphertext, associated_data=None)
             except Exception as e:
-                secho(f"Error loading master key from {file}: {e}", fg="red")
-                continue
+                error.append(f"\nError loading master key from {file}: {e} \n")
 
-        secho("No master key found", fg="red")
+
+        secho("\nNo master key found - Wrong password\n", fg="red")
         return None
     
     def update_master_key(self, new_password: List[bytes]) -> None:
         if not new_password:
-            secho("No new password provided", fg="red")
+            secho("\nNo new password provided \n", fg="red")
             return
         
         if len(new_password) != 3:
-            secho("Invalid number of passwords provided", fg="red")
+            secho("\nInvalid number of passwords provided \n", fg="red")
             return
         
         current_master_key = self.load_master_key()
         if current_master_key is None:
-            secho("Failed to load current master key", fg="red")
+            secho("\nFailed to load current master key \n", fg="red")
             return
         
         for i, password in enumerate(new_password):
@@ -105,6 +107,6 @@ class MasterKeyManager:
             with open(key_file_path, "wb") as f:
                 f.write(encrypted_key)
 
-        secho("Master key updated successfully!", fg="green")
+        secho("\nMaster key updated successfully! \n", fg="green")
         
 

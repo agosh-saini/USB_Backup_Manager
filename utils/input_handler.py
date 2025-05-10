@@ -33,17 +33,23 @@ class InputHandler:
         secho("10. Exit: exit", fg="blue")
 
     def add_account(self) -> None:
-        platform = prompt("platform: ", fg="yellow")
-        account = prompt("account: ", fg="yellow")
+        secho("platform: ", fg="yellow", nl=False)
+        platform = prompt("")
+        secho("account: ", fg="yellow", nl=False)
+        account = prompt("")
 
         if not self.open_db.add_account(platform, account):
             print("Account already exists for this platform")
             return
 
     def add_backup_key(self) -> None:
-        platform = prompt("platform: ", fg="yellow")
-        account = prompt("account: ", fg="yellow")
-        key = prompt("key: ", fg="yellow")
+        secho("platform: ", fg="yellow", nl=False)
+        platform = prompt("")
+        secho("account: ", fg="yellow", nl=False)
+        account = prompt("")
+        secho("for multiple keys, enter a comma separated list of keys", fg="yellow")
+        secho("key: ", fg="yellow", nl=False)
+        key = prompt("")
 
         # Get account_id first
         account_id = self.open_db.get_account_id(platform, account)
@@ -55,16 +61,34 @@ class InputHandler:
             account_id = self.open_db.get_account_id(platform, account)
 
         # Convert key to bytes before encryption
-        key_bytes = key.encode()
-        encrypted_key = self.crypto_handler.encrypt(key_bytes)
 
-        self.encrypted_db.add_backup_key(account_id, encrypted_key)
-        self.open_db.increment_key_count(account_id)
+        if "," in key:
+            key = key.replace(" ", "")
+            keys = key.split(",")
+            for key in keys:
+                key_bytes = key.encode()
+                encrypted_key = self.crypto_handler.encrypt(key_bytes)
+                self.encrypted_db.add_backup_key(account_id, encrypted_key)
+                self.open_db.increment_key_count(account_id)
+                secho(f"Key: {key} added successfully", fg="green")
+
+            secho("All keys added successfully", fg="green", bold=True)
+
+        else:
+            key_bytes = key.encode()
+            encrypted_key = self.crypto_handler.encrypt(key_bytes)
+            self.encrypted_db.add_backup_key(account_id, encrypted_key)
+            self.open_db.increment_key_count(account_id)
+            secho(f"Key: {key} added successfully", fg="green")
+        
     
     def view_backup_key(self) -> None:
-        platform = prompt("platform: ", fg="yellow")
-        account = prompt("account: ", fg="yellow")
-        password = prompt("password: ", fg="yellow").encode()
+        secho("platform: ", fg="yellow", nl=False)
+        platform = prompt("")
+        secho("account: ", fg="yellow", nl=False)
+        account = prompt("")
+        secho("password: ", fg="yellow", nl=False)
+        password = getpass("").encode()
 
         # Create a temporary key manager with the provided password to verify it
         temp_key_manager = MasterKeyManager(password)
@@ -79,41 +103,62 @@ class InputHandler:
             return
 
         # Get the backup key with the lowest ID
-        key = self.encrypted_db.get_backup_key(account_id)
-        if key is None:
+        key_result = self.encrypted_db.get_backup_key(account_id)
+        if key_result is None:
             secho("No backup key found", fg="red")
             return
 
-        decrypted_key = self.crypto_handler.decrypt(key)
+        encrypted_key, backup_key_id = key_result
+        decrypted_key = self.crypto_handler.decrypt(encrypted_key)
         if decrypted_key is None:
             secho("Failed to decrypt key", fg="red")
             return
 
         # Delete the backup key that was viewed
-        self.encrypted_db.delete_backup_key(account_id)
+        if self.encrypted_db.delete_backup_key(account_id, backup_key_id) is None:
+            secho("Failed to delete backup key", fg="red")
+            return
         self.open_db.decrement_key_count(account_id)
         self.used_db.archive_used_key(platform, account, decrypted_key.decode())
 
-        print(f"Key: {decrypted_key.decode()}")
+        secho(f"Key: {decrypted_key.decode()}", fg="green")
 
     def view_used_key(self) -> None:
-        platform = prompt("platform: ", fg="yellow")
-        account = prompt("account: ", fg="yellow")
+        secho("platform: ", fg="yellow", nl=False)
+        platform = prompt("")
+        secho("account: ", fg="yellow", nl=False)
+        account = prompt("")
 
         key = self.used_db.get_used_key(platform, account)
+        if key is None:
+            secho("No used key found for this account", fg="red")
+            return
 
-        print(f"Key: {key}")
+        secho(f"Key: {key}", fg="green")
 
     def delete_used_key(self) -> None:
-        platform = prompt("platform: ", fg="yellow")
-        account = prompt("account: ", fg="yellow")
-        password = prompt("password: ", fg="yellow")
+        secho("platform: ", fg="yellow", nl=False)
+        platform = prompt("")
+        secho("account: ", fg="yellow", nl=False)
+        account = prompt("")
+        secho("password: ", fg="yellow", nl=False)
+        password = getpass("").encode()
 
-        if self.master_key_manager.load_master_key(password) is None:
+        temp_key_manager = MasterKeyManager(password)
+        if temp_key_manager.load_master_key() is None:
             secho("Incorrect password", fg="red")
             return
 
-        self.used_db.delete_used_key(platform, account)
+        # First check if any keys exist
+        if self.used_db.get_used_key(platform, account) is None:
+            secho("No used keys found for this account", fg="yellow")
+            return
+
+        # Try to delete the keys
+        if self.used_db.delete_used_key(platform, account):
+            secho("Used keys deleted successfully", fg="green")
+        else:
+            secho("Failed to delete used keys", fg="red")
 
     def all_accounts(self) -> None:
         accounts = self.open_db.get_all_accounts()
@@ -148,19 +193,24 @@ class InputHandler:
             secho("Incorrect password", fg="red")
             return
 
-        hide_password = prompt("Hide password? (y/n): ", type=str)
+        while True:
+            hide_password = prompt("Hide password? (y/n): ", type=str).lower()
+            if hide_password in ['y', 'n']:
+                break
+            secho("Please enter 'y' or 'n'", fg="red")
 
         new_password = []
         for i in range(3):
-            if hide_password == "y":
-                pwd = getpass(f"Enter password {i+1}: ").encode()
-            else:
-                pwd = getpass(f"Enter password {i+1}: ")
-                secho(f"Password {i+1}: {pwd}", fg="green")
-                pwd = pwd.encode()
+            pwd = getpass(f"Enter password {i+1}: ").encode()
             new_password.append(pwd)
-        self.master_key_manager.update_master_key(new_password)
-        secho("Password updated successfully", fg="green")
+            if hide_password == "n":
+                secho(f"Password {i+1}: {pwd.decode()}", fg="green")
+
+        try:
+            self.master_key_manager.update_master_key(new_password)
+            secho("Password updated successfully", fg="green")
+        except Exception as e:
+            secho(f"Failed to update password: {str(e)}", fg="red")
 
         
         

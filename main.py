@@ -12,10 +12,14 @@ from pathlib import Path
 from getpass import getpass
 
 def main():
-    secho("Backup Key Manager", fg="green", bold=True, underline=True)  
-    secho("Welcome to the Backup Key Manager", fg="green")
-    secho("Please enter your master password to continue", fg="yellow")
-    secho("First time users should enter a new password", fg="yellow")
+    secho("\n" + "=" * 40, fg="green")
+    secho("🔐  Backup Key Manager", fg="green", bold=True, underline=True)
+    secho("=" * 40 + "\n", fg="green")
+
+    secho("👋 Welcome to the Backup Key Manager!", fg="green", bold=True)
+    secho("🔑 Please enter your master password to continue.", fg="yellow")
+    secho("🆕 First-time users should enter a new password.\n", fg="yellow")
+
     master_password = getpass().encode()
     secho("Please enter your master password again to confirm", fg="yellow")
     confirm_password = getpass().encode()
@@ -29,21 +33,21 @@ def main():
 
     # Confirm Password
     if not any(Path("keyvault").glob("master_key_*.enc")):
-        secho("No master key found. Generating new master key...", fg="yellow")
+        secho("\nNo master key found. Generating new master key... \n", fg="yellow")
         passwords = []
         for i in range(3):
             pwd = getpass(f"Enter password {i+1}: ").encode()
             passwords.append(pwd)
         master_key = key_manager.generate_master_key(passwords)
-        secho("Master key generated successfully!", fg="green")
+        secho("\nMaster key generated successfully! \n", fg="green")
     
     else:
-        secho("Loading existing master key...", fg="yellow")
+        secho("\nLoading existing master key... \n", fg="yellow")
         master_key = key_manager.load_master_key()
         if master_key:
-            secho("Master key loaded successfully!", fg="green")
+            secho("\nMaster key loaded successfully! \n", fg="green")
         else:
-            secho("Failed to load master key", fg="red")
+            secho("\nExiting... Wrong password or master key corrupted - Please try again \n", fg="red", bold=True, underline=True)
             sys_exit(1)
 
     # Initialize Crypto Handler
@@ -63,15 +67,15 @@ def main():
     input_handler = InputHandler(key_manager, crypto_handler, open_db, encrypted_db, used_db)
 
     while True:
-        secho("Print -h for list of commands", fg="yellow")
+        secho("\nPrint -help for list of commands \n", fg="yellow")
         command = input("Enter a command: ")
 
-        if command in ["-h", "add_account", "add_backup_key", "view_backup_key", 
+        if command in ["-help", "add_account", "add_backup_key", "view_backup_key", 
                        "view_used_key", "delete_used_key", "all_accounts", 
                        "all_backup_keys", "all_used_keys", "update_password", 
                        "exit"]:
             
-            if command == "-h":
+            if command == "-help":
                 input_handler.help()
 
             if command == "add_account":
