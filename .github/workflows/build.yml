@@ -30,7 +30,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefolder --distpath build_output --name backup_key_manager main.py
+        pyinstaller --onedir --distpath build_output --name backup_key_manager main.py
 
     - name: Upload output folder
       uses: actions/upload-artifact@v4
